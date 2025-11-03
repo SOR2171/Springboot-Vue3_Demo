@@ -36,7 +36,7 @@ class JwtUtils(
             .sign(algorithm)
     }
     
-    private fun expiresTime(): Date {
+    fun expiresTime(): Date {
         val cal = Calendar.getInstance()
         cal.add(Calendar.HOUR, expireHours)
         return cal.time

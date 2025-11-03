@@ -1,6 +1,7 @@
 package com.github.sor2171.backend.config
 
 import com.github.sor2171.backend.entity.RestBean
+import com.github.sor2171.backend.entity.vo.response.AuthorizeVO
 import com.github.sor2171.backend.utils.JwtUtils
 import jakarta.annotation.Resource
 import jakarta.servlet.http.HttpServletRequest
@@ -18,23 +19,28 @@ class SecurityConfiguration(
     @Resource
     val utils: JwtUtils
 ) {
-    
+
     val authenticationSuccessHandler =
         { request: HttpServletRequest,
           response: HttpServletResponse,
           authentication: Authentication ->
             response.contentType = "application/json;charset=UTF-8"
-            
+
             val user = authentication.principal as UserDetails
-            val token = utils.createJwt(
-                user,
-                1,
-                "abc123"
+            val vo = AuthorizeVO(
+                "abc123",
+                "USER",
+                utils.createJwt(
+                    user,
+                    1,
+                    "abc123"
+                ),
+                utils.expiresTime()
             )
-            
+
             response.writer.write(
                 RestBean
-                    .success(token)
+                    .success(vo)
                     .toJsonString()
             )
         }
