@@ -27,7 +27,7 @@ class SecurityConfiguration(
 
     @Resource
     val jwtAuthorizeFilter: JwtAuthorizeFilter,
-    
+
     @Resource
     val service: AccountService,
 ) {
@@ -69,17 +69,14 @@ class SecurityConfiguration(
 
             val user = authentication.principal as UserDetails
             val account = service.findAccountByNameOrEmail(user.username)!!
-            val vo = AuthorizeVO(
-                account.username,
-                account.role,
-                utils.createJwt(
-                    user,
-                    account.id,
-                    account.username
-                ),
-                utils.expiresTime()
+            val vo = account.toViewObject(
+                AuthorizeVO::class,
+                mapOf(
+                    "token" to utils.createJwt(user, account.id, account.username),
+                    "expire" to utils.expiresTime()
+                )
             )
-            
+
             response.writer.write(
                 RestBean
                     .success(vo)
@@ -106,7 +103,7 @@ class SecurityConfiguration(
             response.contentType = "application/json;charset=UTF-8"
             val writer = response.writer
             val authorization = request.getHeader(HttpHeaders.AUTHORIZATION)
-            if (utils.invalidateJwt(authorization)) 
+            if (utils.invalidateJwt(authorization))
                 writer.write(RestBean.success().toJsonString())
             else writer.write(RestBean.logoutFailed().toJsonString())
         }
