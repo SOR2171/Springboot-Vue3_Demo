@@ -14,10 +14,10 @@ const form = reactive({
 
 const formRule = {
   username: [
-    {required: true, message: 'please input username or email', trigger: 'blur'}
+    { required: true, message: 'please input username or email', trigger: 'blur' }
   ],
   password: [
-    {required: true, message: 'please input password', trigger: 'blur'}
+    { required: true, message: 'please input password', trigger: 'blur' }
   ]
 }
 
@@ -85,7 +85,7 @@ function userLogin() {
       <span style="font-size: 10px;color: slategray">have no account?</span>
     </el-divider>
     <div style="margin-top: 16px">
-      <el-button style="width: 280px" type="default">
+      <el-button @click="router.push('/register')" style="width: 280px" type="default">
         Sign up
       </el-button>
     </div>
