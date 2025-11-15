@@ -5,4 +5,5 @@ object Const {
     const val CORS_ORDER = -102
     const val VERIFY_EMAIL_LIMIT = "verify:email:limit:"
     const val VERIFY_EMAIL_DATA = "verify:email:data:"
+    const val ENCODER_PREFIX = "{bcrypt}"
 }

@@ -1,13 +1,19 @@
 package com.github.sor2171.backend.controller
 
 import com.github.sor2171.backend.entity.RestBean
+import com.github.sor2171.backend.entity.vo.request.EmailRegisterVO
 import com.github.sor2171.backend.service.AccountService
 import jakarta.annotation.Resource
 import jakarta.servlet.http.HttpServletRequest
+import jakarta.validation.Valid
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.Pattern
+import org.apache.logging.log4j.util.Supplier
+import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -26,8 +32,27 @@ class AuthorizeController(
         @RequestParam @Pattern(regexp = "(register|reset)") type: String,
         request: HttpServletRequest
     ): RestBean<out String?> {
-        val wrongMessage = service.registerEmailVerifyCode(type, email, request.remoteAddr)
-        return if (wrongMessage.isBlank()) RestBean.success() else
+        return this.messageHandler(
+            service
+                .registerEmailVerifyCode(
+                type,
+                email,
+                request.remoteAddr
+            )
+        )
+
+    }
+
+    @PostMapping("/register")
+    fun emailRegister(@RequestBody @Valid vo: EmailRegisterVO): RestBean<out String?> {
+        return this.messageHandler(service.registerEmailAccount(vo))
+    }
+
+    fun messageHandler(wrongMessage: String): RestBean<out String?> {
+        return if (wrongMessage.isBlank()) {
+            RestBean.success()
+        } else {
             RestBean.failure(400, null, wrongMessage)
+        }
     }
 }

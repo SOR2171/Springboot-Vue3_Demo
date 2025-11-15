@@ -11,7 +11,7 @@ import java.util.Date
 @AllArgsConstructor
 data class Account(
     @TableId(type = IdType.AUTO)
-    val id: Int,
+    val id: Int?,
     val username: String,
     val password: String,
     val email: String,

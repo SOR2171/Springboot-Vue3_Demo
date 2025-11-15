@@ -72,7 +72,7 @@ class SecurityConfiguration(
             val vo = account.toViewObject(
                 AuthorizeVO::class,
                 mapOf(
-                    "token" to utils.createJwt(user, account.id, account.username),
+                    "token" to utils.createJwt(user, account.id!!, account.username),
                     "expire" to utils.expiresTime()
                 )
             )

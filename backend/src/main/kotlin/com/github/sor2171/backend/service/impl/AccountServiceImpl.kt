@@ -1,7 +1,9 @@
 package com.github.sor2171.backend.service.impl
 
+import com.baomidou.mybatisplus.core.toolkit.Wrappers
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl
 import com.github.sor2171.backend.entity.dto.Account
+import com.github.sor2171.backend.entity.vo.request.EmailRegisterVO
 import com.github.sor2171.backend.mapper.AccountMapper
 import com.github.sor2171.backend.service.AccountService
 import com.github.sor2171.backend.utils.Const
@@ -12,7 +14,9 @@ import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UsernameNotFoundException
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import java.util.Date
 import java.util.concurrent.TimeUnit
 
 @Service
@@ -24,8 +28,11 @@ class AccountServiceImpl(
     val amqpTemplate: AmqpTemplate,
 
     @Resource
-    val stringRedisTemplate: StringRedisTemplate
-
+    val stringRedisTemplate: StringRedisTemplate,
+    
+    @Resource
+    val encoder: PasswordEncoder
+    
 ) : ServiceImpl<AccountMapper, Account>(), AccountService {
 
     override fun loadUserByUsername(username: String?): UserDetails? {
@@ -71,7 +78,52 @@ class AccountServiceImpl(
         }
     }
 
-    fun verifyLimit(ip: String): Boolean {
+    override fun registerEmailAccount(vo: EmailRegisterVO): String {
+        val (email, _, username, password) = vo
+        val code = stringRedisTemplate
+            .opsForValue()
+            .get(Const.VERIFY_EMAIL_DATA + email)
+        
+        if (code == null) return "verify code has not been sent"
+        if (code != vo.code) return "verify code is wrong."
+        if (this.existAccountByEmail(email)) return "account with the same email already exists."
+        if (this.existAccountByUsername(username)) return "username already exists."
+        
+        val encodedPassword = encoder.encode(password)
+        val account = Account(
+            null,
+            username,
+            Const.ENCODER_PREFIX + encodedPassword,
+            email,
+            "user",
+            Date()
+        )
+        
+        if (this.save(account)) {
+            stringRedisTemplate.delete(Const.VERIFY_EMAIL_DATA + email)
+            return ""
+        } else {
+            return "something went wrong. Please contact the administrator."
+        }
+    }
+
+    private fun existAccountByEmail(email: String): Boolean {
+        return this.baseMapper.exists(
+            Wrappers
+                .query<Account>()
+                .eq("email", email)
+        )
+    }
+
+    private fun existAccountByUsername(username: String): Boolean {
+        return this.baseMapper.exists(
+            Wrappers
+                .query<Account>()
+                .eq("username", username)
+        )
+    }
+
+    private fun verifyLimit(ip: String): Boolean {
         val key = Const.VERIFY_EMAIL_LIMIT + ip
         return utils.limitOnceCheck(key, 60)
     }
