@@ -191,9 +191,9 @@ function resetPassword() {
       <span style="font-size: 10px;color: slategray">Wanna go back?</span>
     </el-divider>
     
-    <div style="margin-top: 16px" v-if="activeStep === 0">
+    <div style="margin-top: 24px" v-if="activeStep === 0">
       <el-button @click="router.push('/')" style="width: 280px" type="default">
-        Sign in
+        Go Back
       </el-button>
     </div>
     <div style="margin-top: 24px" v-if="activeStep === 1">
