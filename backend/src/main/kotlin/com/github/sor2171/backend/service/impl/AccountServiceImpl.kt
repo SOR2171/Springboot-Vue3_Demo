@@ -93,7 +93,7 @@ class AccountServiceImpl(
         val account = Account(
             null,
             username,
-            Const.ENCODER_PREFIX + encodedPassword,
+            encodedPassword,
             email,
             "user",
             Date()
@@ -121,7 +121,7 @@ class AccountServiceImpl(
 
         val update = this.update()
             .eq("email", email)
-            .set("password", Const.ENCODER_PREFIX + encodedPassword)
+            .set("password", encodedPassword)
             .update()
 
         if (update) {
